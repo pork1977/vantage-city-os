@@ -1,0 +1,12 @@
+{
+  "name": "vantage-city-os",
+  "private": true,
+  "type": "module",
+  "description": "Holographic live-data 3D map of London on free and open APIs, with Ordnance Survey Data Hub integration.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

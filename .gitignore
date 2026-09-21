@@ -1,0 +1,7 @@
+# Secrets: the OS Data Hub key lives here locally and in Vercel's environment variables online.
+.env
+.env.*
+!.env.example
+node_modules/
+.vercel/
+.claude/

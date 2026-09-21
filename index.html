@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Vantage City OS</title>
+  <meta name="description" content="A holographic, live-data map of London built entirely on free and open APIs.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2302070b'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2362e6ff' stroke-width='2' stroke-dasharray='3 2'/%3E%3Ccircle cx='16' cy='16' r='5' fill='none' stroke='%2362e6ff' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Barlow+Semi+Condensed:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.4.0/os-api-branding.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://cdn.jsdelivr.net/gh/OrdnanceSurvey/os-api-branding@0.4.0/os-api-branding.js" data-div="os-brand-none"></script>
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body class="in-intro">
+  <div id="map" aria-label="3D map of London"></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="panels" aria-live="polite"></div>
+  <div id="tags" aria-hidden="true"></div>
+  <div id="os-brand" aria-label="Ordnance Survey attribution"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+  <div class="fx-scan" aria-hidden="true"></div>
+
+  <div id="hud" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2.2"/><circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M16 1v8M16 23v8M1 16h8M23 16h8" stroke="currentColor" stroke-width="1.2"/></svg>
+        <div>
+          <div class="brand-name">Vantage<span>City OS</span></div>
+          <div class="brand-sub" id="brand-sub">LDN · 51.5074 N · 0.1278 W</div>
+        </div>
+      </div>
+      <div class="search" role="search">
+        <label for="search-input" class="sr-only">Search places</label>
+        <input id="search-input" type="search" placeholder="Search a place, street or landmark" autocomplete="off" spellcheck="false">
+        <kbd>/</kbd>
+        <ul id="search-results" class="search-results" role="listbox" hidden></ul>
+      </div>
+      <button type="button" class="snd" id="snd" aria-pressed="true" title="Sound (A)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
+        <span class="sr-only">Sound</span>
+      </button>
+      <div class="clock">
+        <div class="clock-time" id="clock-time">--:--:--</div>
+        <div class="clock-sub" id="clock-sub">London · UTC --:--</div>
+      </div>
+      <div class="mobile-toggles">
+        <button type="button" id="btn-left" aria-controls="left" aria-expanded="false">Layers</button>
+        <button type="button" id="btn-right" aria-controls="right" aria-expanded="false">Intel</button>
+      </div>
+    </header>
+
+    <aside class="rail rail-left" id="left">
+      <section class="card" id="card-layers">
+        <h2 class="card-h">Layers <span class="card-meta">key</span></h2>
+        <div id="toggles" class="toggles"></div>
+        <div class="fx-row">
+          <button type="button" class="chip" id="t-imagery" aria-pressed="false">Imagery <kbd>I</kbd></button>
+          <button type="button" class="chip" id="t-bloom" aria-pressed="true">Bloom <kbd>B</kbd></button>
+          <button type="button" class="chip" id="t-orbit" aria-pressed="false">Orbit <kbd>O</kbd></button>
+          <button type="button" class="chip" id="t-panels" aria-pressed="true">Panels <kbd>P</kbd></button>
+          <button type="button" class="chip chip-os" id="t-os" aria-pressed="false">OS MasterMap <kbd>M</kbd></button>
+        </div>
+        <div class="slider-row">
+          <label for="panel-dim">Panel backing</label>
+          <input id="panel-dim" type="range" min="0" max="95" step="5" value="70">
+          <output id="panel-dim-v" for="panel-dim">70%</output>
+        </div>
+      </section>
+      <section class="card" id="card-waypoints">
+        <h2 class="card-h">Waypoints</h2>
+        <div id="waypoints" class="waypoints"></div>
+      </section>
+      <section class="card" id="card-feeds">
+        <h2 class="card-h">Data feeds <span class="card-meta" id="feeds-meta">free · open</span></h2>
+        <ul id="feeds" class="feeds"></ul>
+      </section>
+    </aside>
+
+    <aside class="rail rail-right" id="right">
+      <section class="card" id="card-sector">
+        <h2 class="card-h">Sector analysis <span class="card-meta" id="sector-meta">awaiting tiles</span></h2>
+        <div class="sector-place" id="sector-place" hidden></div>
+        <div class="bars" id="sector-bars"></div>
+        <dl class="kv" id="sector-kv"></dl>
+      </section>
+      <section class="card" id="card-air">
+        <h2 class="card-h">Air quality <span class="card-meta" id="air-meta">—</span></h2>
+        <div class="air-top">
+          <div class="big" id="air-big">--</div>
+          <div>
+            <div class="band" id="air-band">NO DATA</div>
+            <div class="small-caps">European AQI · view centre</div>
+          </div>
+        </div>
+        <svg class="spark" id="air-spark" viewBox="0 0 260 44" preserveAspectRatio="none" aria-label="24 hour air quality forecast"></svg>
+        <dl class="kv kv-4" id="air-kv"></dl>
+      </section>
+      <section class="card" id="card-weather">
+        <h2 class="card-h">Atmosphere <span class="card-meta" id="wx-meta">—</span></h2>
+        <div class="wx-top">
+          <div class="big" id="wx-temp">--°</div>
+          <div>
+            <div class="wx-cond" id="wx-cond">—</div>
+            <div class="small-caps" id="wx-feels">feels —</div>
+          </div>
+          <div class="wind" id="wx-wind" title="Wind direction">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-opacity=".3"/><path id="wx-arrow" d="M20 6 L25 22 L20 19 L15 22 Z" fill="currentColor"/></svg>
+            <span id="wx-wind-v">— m/s</span>
+          </div>
+        </div>
+        <dl class="kv kv-4" id="wx-kv"></dl>
+      </section>
+      <section class="card" id="card-route">
+        <h2 class="card-h">Routing <span class="card-meta" id="route-meta">OSRM</span></h2>
+        <div class="seg" role="group" aria-label="Travel mode">
+          <button type="button" data-profile="car" aria-pressed="true">Drive</button>
+          <button type="button" data-profile="bike" aria-pressed="false">Cycle</button>
+          <button type="button" data-profile="foot" aria-pressed="false">Walk</button>
+        </div>
+        <ol class="alts" id="route-alts"></ol>
+        <div class="route-actions">
+          <button type="button" class="btn" id="route-pick">Plan new route <kbd>R</kbd></button>
+          <button type="button" class="btn ghost" id="route-clear">Clear</button>
+        </div>
+        <p class="hint" id="route-hint">Right-click the map to route there from the current origin.</p>
+      </section>
+    </aside>
+
+    <footer class="bottombar">
+      <div class="telemetry" id="telemetry"></div>
+      <ol class="log" id="log" aria-live="polite"></ol>
+      <button type="button" class="compass" id="compass" title="Reset to north">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <g id="compass-rose">
+            <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-dasharray="1.5 3.2"/>
+            <path d="M32 7 L36 32 L32 29 L28 32 Z" fill="#ff4d6a"/>
+            <path d="M32 57 L28 32 L32 35 L36 32 Z" fill="currentColor" fill-opacity=".5"/>
+            <text x="32" y="5.5" text-anchor="middle" font-size="6" fill="currentColor">N</text>
+          </g>
+        </svg>
+        <span id="compass-deg">000°</span>
+      </button>
+    </footer>
+  </div>
+
+  <div id="intro" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+    <div class="intro-bar intro-bar-top">
+      <span>Vantage City OS · build 0.4</span>
+      <span id="intro-clock">London · --:--:--</span>
+    </div>
+    <div class="intro-sweep" aria-hidden="true"></div>
+    <div class="intro-grain" aria-hidden="true"></div>
+    <div class="intro-frame">
+      <div class="intro-main">
+        <p class="intro-kicker"><span class="rec" aria-hidden="true"></span>Live · London · a digital twin in your browser</p>
+        <h1 id="intro-title"><span class="intro-welcome">Welcome to</span><span class="intro-name">Vantage City OS</span></h1>
+        <p class="intro-lede">What you&rsquo;re about to enter is London rebuilt in 3D from open data, live, every time you visit. Buildings, air, transport, weather and aircraft stream in as they happen and are drawn as light. There are no plugins and nothing to install. It is all the modern web.</p>
+        <ul class="intro-list" id="intro-list"></ul>
+        <p class="intro-tech">WebGL 2 · MapLibre GL · three.js · hand-written GLSL shaders · Web Workers · spatial Web Audio</p>
+        <div class="intro-actions">
+          <button type="button" class="intro-enter" id="intro-enter">
+            <span>Enter the city</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </button>
+          <button type="button" class="intro-sound" id="intro-sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
+            <span id="intro-sound-label">Sound on</span>
+          </button>
+        </div>
+        <p class="intro-hint">Press <kbd>Enter</kbd> to begin · spatial sound is on, best with headphones · <kbd>H</kbd> hides the controls inside</p>
+      </div>
+      <aside class="intro-side" aria-label="Live system check">
+        <div class="intro-side-h"><span>System check</span><span id="intro-count">0 / 0 live</span></div>
+        <div class="intro-meter"><span id="intro-meter"></span></div>
+        <ol id="boot-log"></ol>
+      </aside>
+    </div>
+    <div class="intro-bar intro-bar-bottom">
+      <span>Contains OS data © Crown copyright and database rights 2026 · © OpenStreetMap contributors · Open-Meteo · Powered by TfL Open Data · adsb.lol</span>
+    </div>
+  </div>
+
+  <div id="picker-hint" class="picker-hint" hidden></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
