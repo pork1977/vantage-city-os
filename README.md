@@ -2,7 +2,7 @@
 
 A holographic, live-data 3D map of London built only on free and open APIs.
 
-**Live demo: [vantage-city-os.vercel.app](https://vantage-city-os.vercel.app)** (sound is on by default; best on a desktop browser with headphones)
+**Live demo: [vantage-city-os.vercel.app](https://vantage-city-os.vercel.app)** (switch the sound on for spatial audio; best on a desktop browser with headphones)
 
 ## Run it
 
@@ -16,7 +16,7 @@ The page opens on a welcome screen. The city loads and circles behind it, and a 
 
 ### Sound
 
-The soundscape is synthesised live with Web Audio. There are no recordings, so nothing to download or license. It's spatial and follows the scene: traffic sits on the major roads in view, trains run along the rail lines on screen, jet noise follows the live aircraft, wind follows the live weather, and a crowd murmur rises at street level. Sound is on by default and starts with your first click (normally Enter), since browsers hold audio back until then. Mute with the speaker button (top right) or `A`.
+The soundscape is synthesised live with Web Audio. There are no recordings, so nothing to download or license. It's spatial and follows the scene: traffic sits on the major roads in view, trains run along the rail lines on screen, jet noise follows the live aircraft, wind follows the live weather, and a crowd murmur rises at street level. Sound is off by default, because browsers block audio until you interact with the page. Switch it on from the welcome screen, the speaker button (top right) or `A`.
 
 ## Ordnance Survey (optional, recommended)
 

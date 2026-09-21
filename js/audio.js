@@ -8,9 +8,8 @@ const rand = (a, b) => a + Math.random() * (b - a);
 
 export class CityAudio {
   constructor() {
-    // Sound is on by default. Browsers still hold audio back until the first click or key press,
-    // so main.js calls start() on that first gesture.
-    this.on = true;
+    // Browsers only allow audio after a gesture, so sound always starts off and the controls say so.
+    this.on = false;
     this.ctx = null;
     this.roads = [];
     this.rails = [];
@@ -21,7 +20,7 @@ export class CityAudio {
     this.nextSyllable = 0;
   }
 
-  // Must run inside a user gesture (a click or key press) so the browser lets audio start.
+  // Must run inside a user gesture (the Enter click) so the browser lets audio start.
   start() {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return false;

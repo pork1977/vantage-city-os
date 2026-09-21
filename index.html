@@ -45,7 +45,7 @@
         <kbd>/</kbd>
         <ul id="search-results" class="search-results" role="listbox" hidden></ul>
       </div>
-      <button type="button" class="snd" id="snd" aria-pressed="true" title="Sound (A)">
+      <button type="button" class="snd" id="snd" aria-pressed="false" title="Sound (A)">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
         <span class="sr-only">Sound</span>
       </button>
@@ -172,12 +172,12 @@
             <span>Enter the city</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
           </button>
-          <button type="button" class="intro-sound" id="intro-sound" aria-pressed="true">
+          <button type="button" class="intro-sound" id="intro-sound" aria-pressed="false">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h4l5-4v14l-5-4H4z"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="mute" d="M16 9l5 6M21 9l-5 6"/></svg>
-            <span id="intro-sound-label">Sound on</span>
+            <span id="intro-sound-label">Sound off</span>
           </button>
         </div>
-        <p class="intro-hint">Press <kbd>Enter</kbd> to begin · spatial sound is on, best with headphones · <kbd>H</kbd> hides the controls inside</p>
+        <p class="intro-hint">Press <kbd>Enter</kbd> to begin · switch sound on for spatial audio, best with headphones · <kbd>H</kbd> hides the controls inside</p>
       </div>
       <aside class="intro-side" aria-label="Live system check">
         <div class="intro-side-h"><span>System check</span><span id="intro-count">0 / 0 live</span></div>

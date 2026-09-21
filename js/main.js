@@ -181,18 +181,6 @@ function syncSoundButtons() {
 // No soundscape drifting out of a background tab.
 document.addEventListener('visibilitychange', () => audio.setHidden(document.hidden));
 syncSoundButtons();
-// Sound defaults to on, but browsers only let audio start inside a gesture: begin on the first
-// click, tap or key press anywhere (usually the Enter button). pointerdown fires before click, so
-// a first click on a sound button still toggles from a running soundscape.
-{
-  const unlock = () => {
-    for (const ev of ['pointerdown', 'keydown']) document.removeEventListener(ev, unlock, true);
-    if (audio.on) audio.start();
-  };
-  for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, unlock, true);
-  // Firefox can say up front whether audio may start without a gesture (e.g. autoplay allowed for this site).
-  if (navigator.getAutoplayPolicy?.('audiocontext') === 'allowed') unlock();
-}
 renderIntro();
 $('intro-sound').addEventListener('click', () => {
   audio.setOn(!audio.on);
