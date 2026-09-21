@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
   "regions": ["lhr1"],
   "functions": {
     "api/**/*.js": { "maxDuration": 30 }
