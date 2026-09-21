@@ -2,6 +2,8 @@
 
 A holographic, live-data 3D map of London built only on free and open APIs.
 
+**Live demo: [vantage-city-os.vercel.app](https://vantage-city-os.vercel.app)** (sound is on by default; best on a desktop browser with headphones)
+
 ## Run it
 
 ```bash
